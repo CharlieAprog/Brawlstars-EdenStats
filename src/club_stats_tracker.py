@@ -30,6 +30,12 @@ class ClubStatsTracker():
             team_data[week_num] = data[['team','sum']].groupby(['team']).sum()
         return team_data
 
+    def save_team_data(self):
+        path = f'{self.data_path}/02_team_performance'
+        self.team_data.to_csv(f'{path}/teams.csv', index=True, sep=',')
+
+
+
 
 if __name__ == '__main__':
     if 'src' not in os.getcwd():
@@ -37,4 +43,4 @@ if __name__ == '__main__':
 
     collector = ClubStatsTracker('new_eden')
     data = collector.week_data
-    collector._create_team_data()
+    collector.save_team_data()
