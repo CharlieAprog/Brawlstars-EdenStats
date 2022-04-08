@@ -3,13 +3,14 @@ import os
 from utils import UNWANTED
 
 
-class DataCollector():
+class ClubStatsTracker():
     def __init__(self, club):
         self.club = club
         self.club_folder = '01_new_eden' if 'new' in club else '02_edens_gate'
         self.data_path = f'../data/{self.club_folder}'
         self.current_week = None
         self.week_data = self._collect_week_data()
+        self.team_data = self._create_team_data()
 
     def _collect_week_data(self):
         week_data = {}
@@ -21,12 +22,19 @@ class DataCollector():
             week_data[week] = pd.read_csv(f'{week_path}/{week_file}')
         return week_data
 
+    def _create_team_data(self):
+        team_data = pd.DataFrame()
+        for week_num, data in self.week_data.items():
+            data = data.copy()
+            data['sum'] = data.loc[:,'day1':'day3'].sum(axis=1)
+            team_data[week_num] = data[['team','sum']].groupby(['team']).sum()
+        return team_data
+
 
 if __name__ == '__main__':
     if 'src' not in os.getcwd():
         os.chdir('src')
 
-    collector = DataCollector('new_eden')
-    print(collector.current_week)
-
-    print('hello')
+    collector = ClubStatsTracker('new_eden')
+    data = collector.week_data
+    collector._create_team_data()
