@@ -40,11 +40,10 @@ class ClubStatsTracker():
                 if player_name not in player_dict.keys():
                     player_dict[player_name] = Player(player_name, week_num, current_team)
                 else:
-                    player_dict[player_name].current_team = current_team
+                    player_dict[player_name].add_team(week_num, current_team)
         return player_dict
 
-
-
+    # def create_player_data
 
     def save_team_data(self):
         path = f'{self.data_path}/02_team_performance'
