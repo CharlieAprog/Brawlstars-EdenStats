@@ -1,6 +1,7 @@
 import pandas as pd
+import numpy as np
 import os
-from utils import UNWANTED
+from utils import UNWANTED, add_stats
 from players import Player
 
 
@@ -13,6 +14,7 @@ class ClubStatsTracker():
         self.week_data = self._collect_week_data()
         self.team_data = self._create_team_data()
         self.players = self._read_players()
+        self.player_data = self._create_player_data()
 
     def _collect_week_data(self):
         week_data = {}
@@ -43,11 +45,39 @@ class ClubStatsTracker():
                     player_dict[player_name].add_team(week_num, current_team)
         return player_dict
 
-    # def create_player_data
+    def _collect_current_teams(self, player_data):
+        teams = []
+        for player in player_data.index:
+            teams.append(self.players[player].current_team)
+        player_data.insert(loc=0, column='current_team',value=teams)
+        return player_data
 
-    def save_team_data(self):
-        path = f'{self.data_path}/02_team_performance'
-        self.team_data.to_csv(f'{path}/teams.csv', index=True, sep=',')
+    def _create_player_data(self):
+        player_names = list(self.players.keys())
+        player_data = pd.DataFrame(index=player_names)
+        player_data.index.name = 'player'
+        for week_num, data in self.week_data.items():
+            data = data.copy().set_index('player')
+            scores = []
+            for name in player_names:
+                if name in data.index.values:
+                    player_scores = data.loc[name,'day1':'day3']
+                    scores.append(player_scores.sum())
+                    self.players[name].add_week_scores(week_num, player_scores.values)
+                else:
+                    scores.append(np.nan)
+                    self.players[name].add_week_scores(week_num, [np.nan] * 3)
+            player_data[week_num] = scores
+
+        player_data = self._collect_current_teams(player_data)
+        player_data = add_stats(player_data, axis=1, descriptive_cols=1)
+        return player_data.sort_values(by=['ave','current_team'], ascending=False)
+
+    def save_data(self):
+        player_path = f'{self.data_path}/01_player_performance'
+        team_path = f'{self.data_path}/02_team_performance'
+        self.player_data.to_csv(f'{player_path}/players.csv', index=True, sep=',')
+        self.team_data.to_csv(f'{team_path}/teams.csv', index=True, sep=',')
 
 
 
@@ -60,4 +90,4 @@ if __name__ == '__main__':
     collector = ClubStatsTracker('new_eden')
     data = collector.week_data
     players = collector.players
-    collector.save_team_data()
+    collector.save_data()
