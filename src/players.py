@@ -6,7 +6,8 @@ class Player():
     def __init__(self, name, entry_week, current_team) -> None:
         self.name = name
         self.entry_week = entry_week
-        self.ratio = 0
+        self.win_rate = 0
+        self.coord_rate = 0
         self.current_team = current_team
         self.team_history = self._fill_team_history()
         self.score_history = pd.DataFrame(columns=['day1', 'day2', 'day3'])
@@ -31,7 +32,9 @@ class Player():
         history[week] = scores
         self.score_history = history.T
         self.score_history.index.name=self.name
+        self.win_rate = self._calc_win_rate()
         self.coordination_history = self._coordination_overview()
+        self.coord_rate = self._calc_coord_rate()
 
     def _coordination_overview(self):
         coordination = self.score_history.copy()
@@ -39,6 +42,25 @@ class Player():
         team_scores_day3 = [15, 19, 23, 27]
         for c in coordination:
             scores = team_socores if c != 'day3' else team_scores_day3
-            activity = [0 if a in scores or np.isnan(a) else 1 for a in coordination[c]]
+            activity = [1 if a in scores else 0 if not np.isnan(a) else np.nan for a in coordination[c]]
             coordination[c] = activity
         return coordination
+
+    def _calc_win_rate(self):
+        data = self.score_history
+        wins = data.apply(np.vectorize(lambda x: int(x/9) if not np.isnan(x) else np.nan)).sum().sum()
+        games = 0
+        for c in data.columns:
+            multiplyer = 2 if c !='day3' else 3
+            games += len(data[c].dropna()) * multiplyer
+        losses = games - wins if games - wins != 0 else 1
+        return round(wins / losses, 3)
+
+    def _calc_coord_rate(self):
+        data = self.coordination_history
+        successes = data.sum().sum()
+        games = 0
+        for c in data.columns:
+            games += len(data[c].dropna())
+        fails = games - successes if games - successes != 0 else 1
+        return round(successes / fails, 3)

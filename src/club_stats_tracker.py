@@ -52,6 +52,17 @@ class ClubStatsTracker():
         player_data.insert(loc=0, column='current_team',value=teams)
         return player_data
 
+    def _add_rates(self, df):
+        df = df.copy()
+        win_rates, coord_rates = [], []
+        for player in df.index:
+            win_rates.append(self.players[player].win_rate)
+            coord_rates.append(self.players[player].coord_rate)
+
+        df['win_rate'] = win_rates
+        df['team_coordination_rate'] = coord_rates
+        return df
+
     def _create_player_data(self):
         player_names = list(self.players.keys())
         player_data = pd.DataFrame(index=player_names)
@@ -71,6 +82,7 @@ class ClubStatsTracker():
 
         player_data = self._collect_current_teams(player_data)
         player_data = add_stats(player_data, axis=1, descriptive_cols=1)
+        player_data = self._add_rates(player_data)
         return player_data.sort_values(by=['ave','current_team'], ascending=False)
 
     def save_data(self):
