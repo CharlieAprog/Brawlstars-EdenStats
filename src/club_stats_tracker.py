@@ -104,14 +104,14 @@ class ClubStatsTracker():
             .background_gradient(axis=0,vmin=0, subset=['sum', 'ave'],cmap=red_greed)\
             .background_gradient(axis=0,vmin=0, subset=['win_rate', 'team_coordination_rate'],cmap=yellow_green)\
             .background_gradient(axis=0,vmin=0, subset=['days_not_played' ],cmap=yellow_green_re)
-        dfi.export(styled_players, '../plots/players.png')
+        dfi.export(styled_players, f'../plots/players_{self.club}.png')
 
 
     def save_data(self):
         player_path = f'{self.data_path}/01_player_performance'
         team_path = f'{self.data_path}/02_team_performance'
-        self.player_data.to_csv(f'{player_path}/players.csv', index=True, sep=',')
-        self.team_data.to_csv(f'{team_path}/teams.csv', index=True, sep=',')
+        self.player_data.to_csv(f'{player_path}/players_{self.club}.csv', index=True, sep=',')
+        self.team_data.to_csv(f'{team_path}/teams_{self.club}.csv', index=True, sep=',')
 
 
 
@@ -121,7 +121,8 @@ if __name__ == '__main__':
     if 'src' not in os.getcwd():
         os.chdir('src')
 
-    collector = ClubStatsTracker('new_eden')
-    data = collector.week_data
-    players = collector.players
-    collector.save_data()
+    new = ClubStatsTracker('new_eden')
+    gate = ClubStatsTracker('edens_gate')
+
+    new.save_data()
+    gate.save_data()
