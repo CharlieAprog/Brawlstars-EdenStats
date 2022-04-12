@@ -3,6 +3,8 @@ import numpy as np
 import os
 from utils import UNWANTED, add_stats
 from players import Player
+from matplotlib import cm
+import dataframe_image as dfi
 
 
 class ClubStatsTracker():
@@ -86,7 +88,24 @@ class ClubStatsTracker():
         player_data = self._collect_current_teams(player_data)
         player_data = add_stats(player_data, axis=1, descriptive_cols=1)
         player_data = self._add_rates(player_data)
-        return player_data.sort_values(by=['ave','current_team'], ascending=False)
+        self._plot_player_dataframe(player_data)
+        return player_data
+
+    def _plot_player_dataframe(self,player_data ):
+        red_greed = cm.get_cmap('RdYlGn')
+        yellow_green = cm.get_cmap('summer_r')
+        yellow_green_re = cm.get_cmap('summer')
+
+        styled_players = player_data.style.format({"sum": "{:20,.0f}",
+                    "ave": "{:20,.2f}",
+                    "win_rate": "{:20,.2f}",
+                    "team_coordination_rate":"{:20,.2f}"})\
+            .bar(subset=["week1",], color='lightgreen', vmin=0, vmax=63)\
+            .background_gradient(axis=0,vmin=0, subset=['sum', 'ave'],cmap=red_greed)\
+            .background_gradient(axis=0,vmin=0, subset=['win_rate', 'team_coordination_rate'],cmap=yellow_green)\
+            .background_gradient(axis=0,vmin=0, subset=['days_not_played' ],cmap=yellow_green_re)
+        dfi.export(styled_players, '../plots/players.png')
+
 
     def save_data(self):
         player_path = f'{self.data_path}/01_player_performance'
