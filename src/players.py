@@ -8,6 +8,7 @@ class Player():
         self.entry_week = entry_week
         self.win_rate = 0
         self.coord_rate = 0
+        self.days_not_played = 0
         self.current_team = current_team
         self.team_history = self._fill_team_history()
         self.score_history = pd.DataFrame(columns=['day1', 'day2', 'day3'])
@@ -32,9 +33,14 @@ class Player():
         history[week] = scores
         self.score_history = history.T
         self.score_history.index.name=self.name
+        self._update_player_info()
+
+
+    def _update_player_info(self):
         self.win_rate = self._calc_win_rate()
         self.coordination_history = self._coordination_overview()
         self.coord_rate = self._calc_coord_rate()
+        self.days_not_played = self._count_days_not_played()
 
     def _coordination_overview(self):
         coordination = self.score_history.copy()
@@ -64,3 +70,7 @@ class Player():
             games += len(data[c].dropna())
         fails = games - successes if games - successes != 0 else 1
         return round(successes / fails, 3)
+
+    def _count_days_not_played(self):
+        data = self.score_history
+        return data[data==0].count().sum()

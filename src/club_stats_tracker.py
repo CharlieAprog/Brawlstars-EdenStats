@@ -54,13 +54,16 @@ class ClubStatsTracker():
 
     def _add_rates(self, df):
         df = df.copy()
-        win_rates, coord_rates = [], []
-        for player in df.index:
-            win_rates.append(self.players[player].win_rate)
-            coord_rates.append(self.players[player].coord_rate)
+        win_rates, coord_rates, days_not_played = [], [], []
+        for name in df.index:
+            player = self.players[name]
+            win_rates.append(player.win_rate)
+            coord_rates.append(player.coord_rate)
+            days_not_played.append(player.days_not_played)
 
         df['win_rate'] = win_rates
         df['team_coordination_rate'] = coord_rates
+        df['days_not_played'] = days_not_played
         return df
 
     def _create_player_data(self):
