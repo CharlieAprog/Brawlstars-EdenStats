@@ -54,7 +54,9 @@ class Player():
 
     def _calc_win_rate(self):
         data = self.score_history
-        wins = data.apply(np.vectorize(lambda x: int(x/9) if not np.isnan(x) else np.nan)).sum().sum()
+        wins = 0
+        for week in data.index:
+            wins += data.loc[week].apply(np.vectorize(lambda x: int(x/9) if not np.isnan(x) else np.nan)).sum().sum()
         games = 0
         for c in data.columns:
             multiplyer = 2 if c !='day3' else 3

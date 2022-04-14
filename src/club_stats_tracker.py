@@ -3,9 +3,7 @@ import numpy as np
 import os
 from utils import UNWANTED, add_stats
 from players import Player
-from matplotlib import cm
-import dataframe_image as dfi
-
+from plotters import plot_player_dataframe, plot_current_week_dataframe
 
 class ClubStatsTracker():
     def __init__(self, club):
@@ -22,7 +20,7 @@ class ClubStatsTracker():
         week_data = {}
         week_path = f'{self.data_path}/03_weekly_data'
         weeks = [file for file in os.listdir(week_path) if not any(un in file for un in UNWANTED)]
-        self.current_week = len(weeks)
+        self.current_week = f'week{len(weeks)}'
         for week_file in weeks:
             week = week_file.split('-')[0]
             week_data[week] = pd.read_csv(f'{week_path}/{week_file}')
@@ -45,7 +43,14 @@ class ClubStatsTracker():
                     player_dict[player_name] = Player(player_name, week_num, current_team)
                 else:
                     player_dict[player_name].add_team(week_num, current_team)
+        player_dict = self._remove_player_teams(player_dict)
         return player_dict
+
+    def _remove_player_teams(self, players):
+        for player_name in players:
+            if player_name not in self.week_data[self.current_week]['player'].values:
+                players[player_name].current_team = 'inactive'
+        return players
 
     def _collect_current_teams(self, player_data):
         teams = []
@@ -53,6 +58,9 @@ class ClubStatsTracker():
             teams.append(self.players[player].current_team)
         player_data.insert(loc=0, column='current_team',value=teams)
         return player_data
+
+    def _remove_inactive_players(self, player_data):
+        return player_data[player_data['current_team'] != 'inactive'].copy()
 
     def _add_rates(self, df):
         df = df.copy()
@@ -68,6 +76,13 @@ class ClubStatsTracker():
         df['days_not_played'] = days_not_played
         return df
 
+    def _finalise_player_data(self, player_data):
+        player_data = self._collect_current_teams(player_data)
+        player_data = add_stats(player_data, axis=1, descriptive_cols=1)
+        player_data = self._add_rates(player_data)
+        player_data = self._remove_inactive_players(player_data)
+        return player_data
+
     def _create_player_data(self):
         player_names = list(self.players.keys())
         player_data = pd.DataFrame(index=player_names)
@@ -78,40 +93,22 @@ class ClubStatsTracker():
             for name in player_names:
                 if name in data.index.values:
                     player_scores = data.loc[name,'day1':'day3']
-                    scores.append(player_scores.sum())
+                    scores.append(int(player_scores.sum()))
                     self.players[name].add_week_scores(week_num, player_scores.values)
                 else:
                     scores.append(np.nan)
                     self.players[name].add_week_scores(week_num, [np.nan] * 3)
             player_data[week_num] = scores
-
-        player_data = self._collect_current_teams(player_data)
-        player_data = add_stats(player_data, axis=1, descriptive_cols=1)
-        player_data = self._add_rates(player_data)
-        self._plot_player_dataframe(player_data)
-        return player_data
-
-    def _plot_player_dataframe(self,player_data ):
-        red_greed = cm.get_cmap('RdYlGn')
-        yellow_green = cm.get_cmap('summer_r')
-        yellow_green_re = cm.get_cmap('summer')
-
-        styled_players = player_data.style.format({"sum": "{:20,.0f}",
-                    "ave": "{:20,.2f}",
-                    "win_rate": "{:20,.2f}",
-                    "team_coordination_rate":"{:20,.2f}"})\
-            .bar(subset=["week1",], color='lightgreen', vmin=0, vmax=63)\
-            .background_gradient(axis=0,vmin=0, subset=['sum', 'ave'],cmap=red_greed)\
-            .background_gradient(axis=0,vmin=0, subset=['win_rate', 'team_coordination_rate'],cmap=yellow_green)\
-            .background_gradient(axis=0,vmin=0, subset=['days_not_played' ],cmap=yellow_green_re)
-        dfi.export(styled_players, f'../plots/players_{self.club}.png')
-
+        return self._finalise_player_data(player_data)
 
     def save_data(self):
         player_path = f'{self.data_path}/01_player_performance'
         team_path = f'{self.data_path}/02_team_performance'
         self.player_data.to_csv(f'{player_path}/players_{self.club}.csv', index=True, sep=',')
         self.team_data.to_csv(f'{team_path}/teams_{self.club}.csv', index=True, sep=',')
+        plot_player_dataframe(self.player_data, self.club_folder)
+        plot_current_week_dataframe(self.current_week, self.week_data, self.club_folder)
+
 
 
 
