@@ -19,7 +19,7 @@ class ClubStatsTracker():
     def _collect_week_data(self):
         week_data = {}
         week_path = f'{self.data_path}/03_weekly_data'
-        weeks = [file for file in os.listdir(week_path) if not any(un in file for un in UNWANTED)]
+        weeks = sorted([file for file in os.listdir(week_path) if not any(un in file for un in UNWANTED)])
         self.current_week = f'week{len(weeks)}'
         for week_file in weeks:
             week = week_file.split('-')[0]
@@ -72,8 +72,8 @@ class ClubStatsTracker():
             days_not_played.append(player.days_not_played)
 
         df['win_rate'] = win_rates
-        df['team_coordination_rate'] = coord_rates
-        df['days_not_played'] = days_not_played
+        df['teaming_rate'] = coord_rates
+        df['no_shows'] = days_not_played
         return df
 
     def _finalise_player_data(self, player_data):
@@ -81,6 +81,7 @@ class ClubStatsTracker():
         player_data = add_stats(player_data, axis=1, descriptive_cols=1)
         player_data = self._add_rates(player_data)
         player_data = self._remove_inactive_players(player_data)
+        player_data = player_data.sort_values(by='current_team')
         return player_data
 
     def _create_player_data(self):

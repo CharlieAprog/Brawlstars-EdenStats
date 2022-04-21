@@ -4,20 +4,28 @@ import pandas as pd
 import itertools
 
 RED_GREEN = cm.get_cmap('RdYlGn')
+RED_GREEN_r = cm.get_cmap('RdYlGn_r')
+
 YELLOW_GREEN = cm.get_cmap('summer_r')
 GREEN_YELLOW = cm.get_cmap('summer')
 PLOT_PATH = '../plots'
 
 def plot_player_dataframe(player_data, club_folder):
     weeks = [c for c in player_data.columns if 'week' in c]
-    cols = weeks + ['ave', 'win_rate','team_coordination_rate']
+    cols = weeks + ['ave', 'win_rate','teaming_rate']
     formats = {col:'{:20,.2f}' for col in cols}
-    formats.update({"sum": "{:20,.0f}"})
-    styled_players = player_data.style.format(formats)\
-        .bar(subset=weeks, color='lightgreen', vmin=0, vmax=63)\
-        .background_gradient(axis=0,vmin=0, subset=['sum', 'ave'],cmap=RED_GREEN)\
-        .background_gradient(axis=0,vmin=0, subset=['win_rate', 'team_coordination_rate'],cmap=YELLOW_GREEN)\
-        .background_gradient(axis=0,vmin=0, subset=['days_not_played' ],cmap=GREEN_YELLOW)
+    styled_players= player_data.style.format(formats)\
+            .bar(subset=weeks, color='lightgreen', vmin=0, vmax=63)\
+            .background_gradient(axis=0,vmin=0, subset=['ave'],cmap=RED_GREEN)\
+            .background_gradient(axis=0,vmin=0,vmax=2, subset=['win_rate'],cmap=RED_GREEN)\
+            .background_gradient(axis=0,vmin=0,vmax=3, subset=['teaming_rate'],cmap=RED_GREEN)\
+            .background_gradient(axis=0,vmin=0,vmax=6, subset=['no_shows' ],cmap=RED_GREEN_r)\
+            .set_properties(subset=weeks, **{'width': '50px'})
+
+    styled_players.set_table_styles({
+            'ave': [{'selector': '', 'props': 'border-left: 1px solid black'}],
+                    },
+                        overwrite=False, axis=0)
     dfi.export(styled_players, f'{PLOT_PATH}/{club_folder}/players/{weeks[-1]}.png')
 
 def plot_current_week_dataframe(current_week, week_data, club_folder):
