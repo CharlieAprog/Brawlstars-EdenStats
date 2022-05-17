@@ -2,6 +2,9 @@ import pandas as pd
 UNWANTED = ['.DS_Store', '.gitkeep']
 
 def add_stats(table, axis=1, descriptive_cols=0):
+    '''
+    Function that will add stats to either axis of a dataframe.
+    '''
     i = descriptive_cols
     table = table.copy()
     if axis == 0:

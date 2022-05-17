@@ -11,6 +11,9 @@ GREEN_YELLOW = cm.get_cmap('summer')
 PLOT_PATH = '../plots'
 
 def plot_player_dataframe(player_data, club_folder):
+    '''
+    Function to create a styled dataframe to plot the player scores over all weeks.
+    '''
     weeks = [c for c in player_data.columns if 'week' in c]
     cols = weeks + ['ave', 'win_rate','teaming_rate']
     formats = {col:'{:20,.2f}' for col in cols}
@@ -29,6 +32,9 @@ def plot_player_dataframe(player_data, club_folder):
     dfi.export(styled_players, f'{PLOT_PATH}/{club_folder}/players/{weeks[-1]}.png')
 
 def plot_current_week_dataframe(current_week, week_data, club_folder):
+    '''
+    Function to plot a styled dataframe for a certain week.
+    '''
     week = week_data[current_week].copy()
     week = week.set_index(['team','player'])
     days = ['day1','day2','day3']
