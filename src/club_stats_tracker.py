@@ -31,6 +31,7 @@ class ClubStatsTracker():
         week_data = {}
         week_path = f'{self.data_path}/03_weekly_data'
         weeks = sorted([file for file in os.listdir(week_path) if not any(un in file for un in UNWANTED)])
+        weeks = sorted(weeks, key=lambda x: int(x.split('-')[0].split('k')[1]))
         self.current_week = f'week{len(weeks)}'
         for week_file in weeks:
             week = week_file.split('-')[0]
