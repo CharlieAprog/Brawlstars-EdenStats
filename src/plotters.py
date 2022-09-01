@@ -8,7 +8,7 @@ RED_GREEN_r = cm.get_cmap('RdYlGn_r')
 
 YELLOW_GREEN = cm.get_cmap('summer_r')
 GREEN_YELLOW = cm.get_cmap('summer')
-PLOT_PATH = '../plots'
+PLOT_PATH = 'plots'
 
 def plot_player_dataframe(player_data, club_folder):
     '''

@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from club_stats_tracker import ClubStatsTracker
+from src.club_stats_tracker import ClubStatsTracker
 
 def main():
     new = ClubStatsTracker('new_eden')
@@ -12,6 +12,4 @@ def main():
 
 
 if __name__ == '__main__':
-    if 'src' not in os.getcwd():
-        os.chdir('src')
     main()

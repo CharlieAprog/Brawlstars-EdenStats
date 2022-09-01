@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
 import os
-from utils import UNWANTED, add_stats
-from players import Player
-from plotters import plot_player_dataframe, plot_current_week_dataframe
+from src.utils import UNWANTED, add_stats
+from src.players import Player
+from src.plotters import plot_player_dataframe, plot_current_week_dataframe
 
 class ClubStatsTracker():
     '''
@@ -15,7 +15,7 @@ class ClubStatsTracker():
     def __init__(self, club):
         self.club = club
         self.club_folder = '01_new_eden' if 'new' in club else '02_edens_gate'
-        self.data_path = f'../data/{self.club_folder}'
+        self.data_path = f'data/{self.club_folder}'
         self.current_week = None
         self.week_data = self._collect_week_data()
         self.team_data = self._create_team_data()
@@ -159,9 +159,6 @@ class ClubStatsTracker():
 
 
 if __name__ == '__main__':
-    if 'src' not in os.getcwd():
-        os.chdir('src')
-
     new = ClubStatsTracker('new_eden')
     gate = ClubStatsTracker('edens_gate')
 
