@@ -5,6 +5,7 @@ from src.utils import UNWANTED, add_stats
 from src.players import Player
 from src.plotters import plot_player_dataframe, plot_current_week_dataframe
 
+
 class ClubStatsTracker():
     '''
     Class that saves all of the stats of a specific club.
@@ -116,6 +117,7 @@ class ClubStatsTracker():
         '''
         Method used to add relevant columns to player_data.
         '''
+        print('finalising')
         player_data = self._collect_current_teams(player_data)
         player_data = add_stats(player_data, axis=1, descriptive_cols=1)
         player_data = self._add_rates(player_data)
@@ -144,18 +146,21 @@ class ClubStatsTracker():
                     scores.append(np.nan)
                     self.players[name].add_week_scores(week_num, [np.nan] * 3)
             player_data[week_num] = scores
+        print(f'initialising {self.club}')
         return self._finalise_player_data(player_data)
 
     def save_data(self):
         '''
         Method to call plotting functions that will create and save plots.
         '''
+        print(f'plotting {self.club} data...')
         player_path = f'{self.data_path}/01_player_performance'
         team_path = f'{self.data_path}/02_team_performance'
         self.player_data.to_csv(f'{player_path}/players_{self.club}.csv', index=True, sep=',')
         self.team_data.to_csv(f'{team_path}/teams_{self.club}.csv', index=True, sep=',')
         plot_player_dataframe(self.player_data, self.club_folder)
         plot_current_week_dataframe(self.current_week, self.week_data, self.club_folder)
+        print('done.\n')
 
 
 if __name__ == '__main__':

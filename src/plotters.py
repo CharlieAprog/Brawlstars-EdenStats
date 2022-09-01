@@ -3,6 +3,7 @@ import dataframe_image as dfi
 import pandas as pd
 import itertools
 
+
 RED_GREEN = cm.get_cmap('RdYlGn')
 RED_GREEN_r = cm.get_cmap('RdYlGn_r')
 
